@@ -3,7 +3,10 @@
 import Funcionario from './Classes/Funcionario.js';
 import Produtividade from './Classes/Produtividade.js';
 import Fase from './Classes/Fase.js';
-import HorasTrabalhadas from './Classes/HorasTrabalhadas.js';
+import MapaHorasTrabalhadas from './Classes/MapaHorasTrabalhadas.js';
+import MapaProdutividade from './Classes/MapaProdutividade.js';
+import Projeto from './Classes/Projeto.js';
+import AlgoritmoGenetico from './Classes/AlgoritmoGenetico.js';
 
 // -------------------------------------- <DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 let qtdFuncionarios = 5;
@@ -17,27 +20,13 @@ let fases = [new Fase("Levantamento", 60),
 
 let produtividades = [[], [], [], [], []];
 
-//produtividades[indiceFuncionario][indiceFase]
-produtividades[0][0] = new Produtividade(fases[0], 20);
-produtividades[1][0] = new Produtividade(fases[0], 60);
-produtividades[2][0] = new Produtividade(fases[0], 40);
-produtividades[3][0] = new Produtividade(fases[0], 30);
-produtividades[4][0] = new Produtividade(fases[0], 130);
-produtividades[0][1] = new Produtividade(fases[1], 10);
-produtividades[1][1] = new Produtividade(fases[1], 40);
-produtividades[2][1] = new Produtividade(fases[1], 10);
-produtividades[3][1] = new Produtividade(fases[1], 80);
-produtividades[4][1] = new Produtividade(fases[1], 20);
-produtividades[0][2] = new Produtividade(fases[2], 60);
-produtividades[1][2] = new Produtividade(fases[2], 30);
-produtividades[2][2] = new Produtividade(fases[2], 30);
-produtividades[3][2] = new Produtividade(fases[2], 50);
-produtividades[4][2] = new Produtividade(fases[2], 70);
-produtividades[0][3] = new Produtividade(fases[3], 50);
-produtividades[1][3] = new Produtividade(fases[3], 30);
-produtividades[2][3] = new Produtividade(fases[3], 20);
-produtividades[3][3] = new Produtividade(fases[3], 30);
-produtividades[4][3] = new Produtividade(fases[3], 10);
+//produtividades[indiceFuncionario][Array de indices produtividade]
+produtividades[0] = {"Levantamento" : 20, "Implementação": 10, "Teste": 60, "Implantação": 50};
+produtividades[1] = {"Levantamento" : 60, "Implementação": 40, "Teste": 30, "Implantação": 30};
+produtividades[2] = {"Levantamento" : 40, "Implementação": 10, "Teste": 30, "Implantação": 20};
+produtividades[3] = {"Levantamento" : 30, "Implementação": 80, "Teste": 50, "Implantação": 30};
+produtividades[4] = {"Levantamento" : 130, "Implementação": 20, "Teste": 70, "Implantação": 10};
+
 
 let disponibilidadesHoras = [];
 
@@ -57,36 +46,31 @@ custosHora[2] = 55;
 custosHora[3] = 40;
 custosHora[4] = 80;
 
-for(let i=0 ; i<qtdFuncionarios ; i++){
-
-	funcionarios[i] = new Funcionario("Funcionario"+i, produtividades[i],disponibilidadesHoras[i],custosHora[i]);
-}
 
 // -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 
 
 for(let i=0 ; i<qtdFuncionarios ; i++){
+	let funcionario = new Funcionario(),
+		mapa_prod = new MapaProdutividade(fases);
+		
+	mapa_prod.fillFromArray(produtividades[i]);
 
-	//horas trabalhadas por cada funcionário em cada etapa do projeto (array temporário)
-	let horasTrabalhadasTemp = [];
+	funcionario.setNome("Funcionario"+i);
+	funcionario.setMapaProdutividade(mapa_prod);
+	funcionario.setDisponibilidadeHoras(disponibilidadesHoras[i]);
+	funcionario.setCustoHora(custosHora[i]);
+	funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
 
-	for(let j=0 ; j<fases.length ; j++){	
-		horasTrabalhadasTemp[j] = Math.floor(Math.random() * 50);
-	}
-
-	funcionarios[i].setHorasTrabalhadas(horasTrabalhadasTemp);
-
+	funcionarios[i] = funcionario;
 }
 
-	console.log(funcionarios[0].getHorasTrabalhadas());
+let projeto = new Projeto();
 
-//let classe = new Classe("foda-se");
-//console.log(classe.getNome());
+projeto.setFases(fases);
+projeto.setFuncionarios(funcionarios);
 
-let bContinua = true;
+let ga = new AlgoritmoGenetico(),
+	popAleatoria = ga.gerarPopulacaoAleatoria(projeto);
 
-while(bContinua){
-
-
-break;
-}
+ga.setPopulacaoInicial(popAleatoria);
