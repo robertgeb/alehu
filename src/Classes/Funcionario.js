@@ -1,12 +1,13 @@
 "use strict";
 
+
 class Funcionario {
 
 	constructor(){
 		this.nome = "";
 		this.disponibilidadeHoras = 0;	
 		this.custoHora = 0.00;
-		this.mapaProdutividade = null;				//array de unidades de produtividade que o funcionário desenvolve (indexado pela área de conhecimento)
+		this.mapaProdutividade = null;	//array de unidades de produtividade que o funcionário desenvolve (indexado pela área de conhecimento)
 		this.mapaHorasTrabalhadas = null;	
 	}	
 
@@ -50,8 +51,20 @@ class Funcionario {
 		this.mapaHorasTrabalhadas = horasTrabalhadas;
 	}
 
+	setHorasTrabalhadasFase(fase, hora){
+		this.getMapaHorasTrabalhadas.setHorasByFase(fase, horas);
+	}
+
+	getHoraTrabalhadasFase(fase){
+		return this.getMapaHorasTrabalhadas().getHoraFase(fase);
+	}
+
 	toString(){
 		return JSON.stringify(this);
+	}
+
+	getCusto(){
+		return this.custoHora * this.mapaHorasTrabalhadas.getSomaHoras();
 	}
 }
 

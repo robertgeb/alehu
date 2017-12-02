@@ -1,5 +1,7 @@
 "use strict";
 
+import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
+
 /*
 * Classe que guarda os índices de produtividade de um funcionário
 * Os valores são indexados pelo nome da fase.

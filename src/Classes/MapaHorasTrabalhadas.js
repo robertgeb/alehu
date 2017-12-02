@@ -1,5 +1,7 @@
 "use strict";
 
+import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
+
 /*
 * Classe que guarda as informações de horas a serem trabalhadas por um funcionário
 * Os valores são indexados pelo nome da fase.
@@ -33,6 +35,42 @@ class MapaHorasTrabalhadas {
 	setHorasByFase(fase, horas){
 		this.mapa[fase] = horas;		
 	}
+
+
+	//retorna o valor de uma fase aleatória
+	//Se não 
+	getHoraAleatoria(){
+		let count = 0;
+
+		for(idx in this.mapa){
+			if(count == indiceAleatorio)
+				return this.mapa[idx];
+				
+			count++;
+		}
+		
+		throw "Erro ao pegar hora aleatória";
+	}
+
+	//retorna o valor de uma fase aleatória
+	//Se não 
+	getHoraAleatoriaDaFase(fase){
+		throw "Erro ao pegar hora aleatória";
+	}
+
+	getNomeFases(){
+		return this.mapa.keys();
+	}
+
+	/*retorna o a soma de todas as horas trabalhadas*/
+	getSomaHoras(){
+		let arr_horas = [];
+		for(let fase in this.mapa)
+			arr_horas.push(this.mapa[fase]);
+
+		return arr_horas.reduce( (total, hora) => { return total + hora; });
+	}
+
 
 	/*
 	*

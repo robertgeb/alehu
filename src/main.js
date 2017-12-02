@@ -46,7 +46,7 @@ custosHora[2] = 55;
 custosHora[3] = 40;
 custosHora[4] = 80;
 
-
+let orcamento_limite = 60000;
 // -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 
 
@@ -69,8 +69,12 @@ let projeto = new Projeto();
 
 projeto.setFases(fases);
 projeto.setFuncionarios(funcionarios);
+projeto.setOrcamentoLimite(orcamento_limite);
 
 let ga = new AlgoritmoGenetico(),
 	popAleatoria = ga.gerarPopulacaoAleatoria(projeto);
 
 ga.setPopulacaoInicial(popAleatoria);
+projeto.setFuncionarios(popAleatoria.toArray());
+projeto.printHorasTrabalhadas();
+console.log(projeto.getOrcamento(), projeto.orcamentoDentroDoLimite());

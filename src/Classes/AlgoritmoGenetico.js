@@ -1,6 +1,8 @@
 "use strict";
 
 import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
+import Populacao from './Populacao.js';
+
 /*
 *
 * Classe que guarda toda a lógica do algoritmo genético.
@@ -60,8 +62,7 @@ class AlgoritmoGenetico {
 	gerarPopulacaoAleatoria(projeto){
 
 		let funcionarios = projeto.getFuncionarios(),
-			fases = projeto.getFases(),
-			populacao = [];
+			fases = projeto.getFases();
 
 		/*
 		* Para cada funcionário gera um número de horas aleatória para cada etapa.
@@ -85,15 +86,13 @@ class AlgoritmoGenetico {
 			funcionarios[i] = funcionario;
 
 		}
+		
+		let populacao = new Populacao;
+		populacao.setElementos(funcionarios);
 
-		return funcionarios;
+		return populacao;
 	}
-
-
-	/*
-	* Recebe um array de funcionários (chamada de população)
-	* itera sobre eles e caso estejam 
-	*/
+		
 
 }
 
