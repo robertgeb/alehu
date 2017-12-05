@@ -5,7 +5,6 @@ class Funcionario {
 
 	constructor(){
 		this.nome = "";
-		this.disponibilidadeHoras = 0;	
 		this.custoHora = 0.00;
 		this.mapaProdutividade = null;	//array de unidades de produtividade que o funcionário desenvolve (indexado pela área de conhecimento)
 		this.mapaHorasTrabalhadas = null;	
@@ -17,10 +16,6 @@ class Funcionario {
 
 	getMapaProdutividades(){
 		return this.produtividades;
-	}
-
-	getDisponibilidadeHoras(){
-		return this.disponibilidadeHoras;
 	}
 
 	getCustoHora(){
@@ -37,10 +32,6 @@ class Funcionario {
 
 	setMapaProdutividade(mapaProd){
 		this.mapaProdutividade = mapaProd;
-	}
-
-	setDisponibilidadeHoras(disp){
-		this.disponibilidadeHoras = disp;
 	}
 
 	setCustoHora(custo){

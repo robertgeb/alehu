@@ -21,9 +21,9 @@ class AlgoritmoGenetico {
 		this.maxNumHorasAleatorio = 100;
 		/* 
 		* Número MÍNIMO de horas gerado pelo método gerarPopulacaoAleatoria() 
-		* Por padrão 1, podendo ser alterado via método setMinNumHorasAleatorio()
+		* Por padrão 0, podendo ser alterado via método setMinNumHorasAleatorio()
 		*/
-		this.minNumHorasAleatorio = 1;
+		this.minNumHorasAleatorio = 0;
 
 		/*
 		* População inicial
@@ -64,26 +64,40 @@ class AlgoritmoGenetico {
 		let funcionarios = projeto.getFuncionarios(),
 			fases = projeto.getFases();
 
-		/*
-		* Para cada funcionário gera um número de horas aleatória para cada etapa.
+
+		/* 
+
 		*/
-		for(let i=0 ; i<funcionarios.length ; i++){
+		for(let j=0 ; j<fases.length ; j++){				
 
-			let funcionario = funcionarios[i],
-				hrsTrabTmp = funcionario.getMapaHorasTrabalhadas();
+			//limite de horas total para a fase (limite da soma das horas de todos os funcionários para essa fase)
+			let hrsLimiteFase = fases[j].getDuracao();
 
-			/* 
-			* Para cada etapa seta um novo mapa de horas trabalhadas para o funcionário e adiciona-o 
-			* ao array de funcionários que será retornado
+			/*
+			* Para cada funcionário gera um número de horas aleatórias
 			*/
-			for(let j=0 ; j<fases.length ; j++){
-				let hrAleatoria = GeradorNumeroAleatorio.gerar(this.minNumHorasAleatorio, 
-															   this.maxNumHorasAleatorio);
-				hrsTrabTmp.setHorasByFase(fases[j].getNome(), hrAleatoria);
+			for(let i=0 ; i<funcionarios.length ; i++){
+
+				let hrAleatoria;
+
+				//o último funcionário fica com o restante das horas. Os primeiros são randômicos
+				if(i != funcionarios.length-1){
+					hrAleatoria = GeradorNumeroAleatorio.gerar(this.minNumHorasAleatorio, 
+														   hrsLimiteFase);
+				} else {
+					hrAleatoria = hrsLimiteFase;
+				}
+
+				//limite decrementa, pois o funcionário corrente já alocou uma porcentagem do tempo dessa etapa
+				hrsLimiteFase -= hrAleatoria; 
+
+				let funcionario = funcionarios[i];
+				
+				funcionario.getMapaHorasTrabalhadas().setHorasByFase(fases[j].getNome(), hrAleatoria);
+
+				funcionarios[i] = funcionario;
+
 			}
-			
-			funcionario.setMapaHorasTrabalhadas(hrsTrabTmp);
-			funcionarios[i] = funcionario;
 
 		}
 		
@@ -91,6 +105,15 @@ class AlgoritmoGenetico {
 		populacao.setElementos(funcionarios);
 
 		return populacao;
+	}
+
+
+	/**
+	*	Cria roleta baseado
+	*
+	*/
+	criarRoleta(){
+
 	}
 
 
@@ -113,7 +136,7 @@ class AlgoritmoGenetico {
 
 
 		let funcionarios = this.elementos,
-		    fases = funcionarios[0].getMapaHorasTrabalhadas().getNomeFases(),		//REVER ISSO AQUI, DO FUNCIONÁRIO 0
+		    fases = funcionarios[0].getMapaHorasTrabalhadas().getNomeFases(),		
 		    faseOuFuncionario = GeradorNumeroAleatorio.gerar(0,1),
 		 	idxFaseAleatoria = GeradorNumeroAleatorio.gerar(0, fases.length-1),
 		 	idxFuncionarioAleatorio = GeradorNumeroAleatorio.gerar(0, funcionarios.length-1);
@@ -192,7 +215,7 @@ class AlgoritmoGenetico {
     			let horasAlocadasFunc2 = 0;
 
     			//calculando as horas alocadas do funcionário
-    			if(let j=0 ; j<fases.length ; j++){
+    			for(let j=0 ; j<fases.length ; j++){
     				horasAlocadasFunc2 += mapaHorasFunc2.getHorasByFase(fases[j]);
     			}
 
@@ -218,7 +241,7 @@ class AlgoritmoGenetico {
     			let horasAlocadasFunc1 = 0;
 
     			//calculando as horas alocadas do funcionário
-    			if(let j=0 ; j<fases.length ; j++){
+    			for(let j=0 ; j<fases.length ; j++){
     				horasAlocadasFunc1 += mapaHorasFunc1.getHorasByFase(fases[j]);
     			}
 
@@ -257,13 +280,6 @@ class AlgoritmoGenetico {
 
 
 		} 
-		
-		//orientado a funcionário
-		else {
-
-			//para implementar		
-
-	  	}
 
 	}
 		

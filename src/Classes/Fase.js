@@ -10,6 +10,10 @@ class Fase {
 	getNome(){
 		return this.nome;
 	}
+
+	getDuracao(){
+		return this.duracao;
+	}
 }
 
 module.exports = Fase;

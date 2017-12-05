@@ -27,54 +27,51 @@ produtividades[2] = {"Levantamento" : 40, "Implementação": 10, "Teste": 30, "I
 produtividades[3] = {"Levantamento" : 30, "Implementação": 80, "Teste": 50, "Implantação": 30};
 produtividades[4] = {"Levantamento" : 130, "Implementação": 20, "Teste": 70, "Implantação": 10};
 
+//array de projetos (amostragem)
+let projetos = [];
 
-let disponibilidadesHoras = [];
+for(let j=0 ; j<2 ; j++){
 
-//disponibilidadesHoras[indiceFuncionario]
-disponibilidadesHoras[0] = 100;
-disponibilidadesHoras[1] = 50;
-disponibilidadesHoras[2] = 150;
-disponibilidadesHoras[3] = 120;
-disponibilidadesHoras[4] = 75;
+	let custosHora = [];
 
-let custosHora = [];
+	//custosHora[indiceFuncionario]
+	custosHora[0] = 30;
+	custosHora[1] = 60;
+	custosHora[2] = 55;
+	custosHora[3] = 40;
+	custosHora[4] = 80;
 
-//custosHora[indiceFuncionario]
-custosHora[0] = 30;
-custosHora[1] = 60;
-custosHora[2] = 55;
-custosHora[3] = 40;
-custosHora[4] = 80;
-
-let orcamento_limite = 60000;
-// -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
+	let orcamento_limite = 60000;
+	// -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 
 
-for(let i=0 ; i<qtdFuncionarios ; i++){
-	let funcionario = new Funcionario(),
-		mapa_prod = new MapaProdutividade(fases);
-		
-	mapa_prod.fillFromArray(produtividades[i]);
+	for(let i=0 ; i<qtdFuncionarios ; i++){
+		let funcionario = new Funcionario(),
+			mapa_prod = new MapaProdutividade(fases);
+			
+		mapa_prod.fillFromArray(produtividades[i]);
 
-	funcionario.setNome("Funcionario"+i);
-	funcionario.setMapaProdutividade(mapa_prod);
-	funcionario.setDisponibilidadeHoras(disponibilidadesHoras[i]);
-	funcionario.setCustoHora(custosHora[i]);
-	funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
+		funcionario.setNome("Funcionario"+i);
+		funcionario.setMapaProdutividade(mapa_prod);
+		funcionario.setCustoHora(custosHora[i]);
+		funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
 
-	funcionarios[i] = funcionario;
+		funcionarios[i] = funcionario;
+	}
+
+	let projeto = new Projeto();
+
+	projeto.setFases(fases);
+	projeto.setFuncionarios(funcionarios);
+	projeto.setOrcamentoLimite(orcamento_limite);
+
+	let ga = new AlgoritmoGenetico(),
+		popAleatoria = ga.gerarPopulacaoAleatoria(projeto);
+
+	ga.setPopulacaoInicial(popAleatoria);
+	projeto.setFuncionarios(popAleatoria.toArray());
+	projeto.printHorasTrabalhadas();
+
+	projetos[j] = projeto;
+
 }
-
-let projeto = new Projeto();
-
-projeto.setFases(fases);
-projeto.setFuncionarios(funcionarios);
-projeto.setOrcamentoLimite(orcamento_limite);
-
-let ga = new AlgoritmoGenetico(),
-	popAleatoria = ga.gerarPopulacaoAleatoria(projeto);
-
-ga.setPopulacaoInicial(popAleatoria);
-projeto.setFuncionarios(popAleatoria.toArray());
-projeto.printHorasTrabalhadas();
-console.log(projeto.getOrcamento(), projeto.orcamentoDentroDoLimite());
