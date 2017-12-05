@@ -15,7 +15,7 @@ class Funcionario {
 	}
 
 	getMapaProdutividades(){
-		return this.produtividades;
+		return this.mapaProdutividade;
 	}
 
 	getCustoHora(){

@@ -53,7 +53,8 @@ class MapaProdutividade{
 		* -> Obs.: Caso esteja presente no array alguma fase que não tenha  
 		*		   Sido inicializada no mapa (via construtor) ela será ignorada
 		*/
-		for(idx in this.mapas){
+
+		for(let idx in fases){
 			if(fases[idx] === undefined)
 				continue;
 

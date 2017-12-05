@@ -30,7 +30,18 @@ produtividades[4] = {"Levantamento" : 130, "Implementação": 20, "Teste": 70, "
 //array de projetos (amostragem)
 let projetos = [];
 
-for(let j=0 ; j<2 ; j++){
+let algoritmoGenetico = new AlgoritmoGenetico();
+
+//quantidade de itens na nossa amostragem
+let qtdAmostra = 4;
+
+//fitnesses da amostragem
+let fitnesses = [];
+
+let orcamento_limite = 60000;
+
+//população inicial
+for(let j=0 ; j<qtdAmostra ; j++){
 
 	let custosHora = [];
 
@@ -40,9 +51,6 @@ for(let j=0 ; j<2 ; j++){
 	custosHora[2] = 55;
 	custosHora[3] = 40;
 	custosHora[4] = 80;
-
-	let orcamento_limite = 60000;
-	// -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 
 
 	for(let i=0 ; i<qtdFuncionarios ; i++){
@@ -72,6 +80,15 @@ for(let j=0 ; j<2 ; j++){
 	projeto.setFuncionarios(popAleatoria.toArray());
 	projeto.printHorasTrabalhadas();
 
-	projetos[j] = projeto;
+	projetos[j] = projeto;	
+
+	fitnesses[j] = algoritmoGenetico.avaliarFitness(projeto);
+
+	console.log("Fitness: " + fitnesses[j]);
 
 }
+	
+// -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
+
+algoritmoGenetico.setFitnesses(fitnesses);
+algoritmoGenetico.mutar(projetos, orcamento_limite);

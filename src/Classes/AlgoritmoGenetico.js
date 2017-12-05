@@ -24,17 +24,34 @@ class AlgoritmoGenetico {
 		* Por padrão 0, podendo ser alterado via método setMinNumHorasAleatorio()
 		*/
 		this.minNumHorasAleatorio = 0;
+		/* 
+		* Número de "peças jogadas na roleta" (significa o número de elementos que serão cruzados)
+		*/
+		this.numElementosASeremCruzados = 2;
 
 		/*
 		* População inicial
 		*/
 		this.populacaoInicial = [];
 
+		/*
+		* Fitnesses de todas as amostras
+		*/
+		this.fitnesses = [];
+
 
 		/*
 		* População atual
 		*/
 		this.populacaoAtual = [];
+	}
+
+	setFitnesses(fitnesses){
+		this.fitnesses = fitnesses;
+	}
+
+	getFitnesses(){
+		return this.fitnesses;
 	}
 
 	setMaxNumHorasAleatorio(max){
@@ -107,12 +124,88 @@ class AlgoritmoGenetico {
 		return populacao;
 	}
 
+	/**
+	* Monta roleta baseando-se nos fitnesses da classe
+	*/
+	getRoleta(){
+		let fitnesses = this.fitnesses;
+		let roleta = [];
+
+		let somaFitnesses = 0;
+
+		//somar fitnesses e saber qual o valor de 100% da roleta
+		for(let j=0 ; j<fitnesses.length ; j++){
+			somaFitnesses += fitnesses[j];
+		}
+
+		//calculando porcentagem de cada roleta
+		for(let j=0 ; j<fitnesses.length ; j++){
+
+			//porcentagem corrente desse fitness na roleta inteira
+			let porcentagemCorrente = (100*fitnesses[j])/somaFitnesses;
+
+			if(j != 0){
+				roleta[j] = roleta[j-1] + porcentagemCorrente;
+			} else {
+				roleta[j] = porcentagemCorrente;
+			}
+
+		}
+
+		roleta.sort(function(a,b) { return a - b;});
+
+		return roleta;
+
+	}
+
 
 	/**
-	*	Cria roleta baseado
+	*	Loop de mutação padrão em um algoritmo genético
+	*/
+	mutar(projetos, orcamento_limite){
+
+		this.crossover();
+
+	}
+
+
+	/**
+	*	avalia fitness de população, que é a soma dos produtos das horas trabalhadas pela produtividade de todos os funcionários
 	*
 	*/
-	criarRoleta(){
+	avaliarFitness(projeto){
+
+		let fitness = 0;
+
+		let funcionarios = projeto.getFuncionarios();
+		let fases = projeto.getFases();
+
+		//funcionários do projeto
+		for(let i=0 ; i<funcionarios.length ; i++){
+
+			let funcionario = funcionarios[i];			
+
+			//mapa de horas do funcionário corrente
+			let mapaHoras = funcionario.getMapaHorasTrabalhadas();
+			let mapaProdutividade = funcionario.getMapaProdutividades();
+
+			for(let j=0 ; j<fases.length ; j++){
+
+				let fase = fases[j].getNome();
+
+				//horas trabalhadas nessa fase
+				let horasTrabalhadasNessaFase = mapaHoras.getHorasByFase(fase);
+				//produtividade do funcionário nessa fase
+				let produtividadeNessaFase = mapaProdutividade.getProdByFase(fase);
+
+				let producao = produtividadeNessaFase * horasTrabalhadasNessaFase;
+
+				//horas do funcionário e da fase corrente
+				fitness += producao;
+			}
+		}
+
+		return fitness;
 
 	}
 
@@ -133,6 +226,52 @@ class AlgoritmoGenetico {
 		enquanto (um dos dois valores resultantes for < 0 ou a soma de horas com esse número resultante > limite de horas de cada funcionário)
 			gera outro número randômico
 		*/
+
+		//array que terá como valor a porcentagem de cada fitness sobre o total
+		let roleta = this.getRoleta();
+
+		//de acordo com os números sorteados, cadeias serão selecionadas para ser feito o crossover.
+		let cadeiasSorteadas = [];
+
+		for(let i=0 ; i<this.numElementosASeremCruzados ; i++){
+			let numeroAleatorio = GeradorNumeroAleatorio.gerar(0,100);			
+
+			for(let j=0 ; j<roleta.length ; j++){
+
+				//se a cadeia for a maior, seta a cadeia sorteada e dá break (imediatamente maior)
+				if(roleta[j] > numeroAleatorio){
+					cadeiasSorteadas[i] = j;
+					break;
+				}
+
+			}
+
+		}
+
+		//mudando números repetidos
+		for(let i=0 ; i<this.numElementosASeremCruzados ; i++){
+			let primeiraCadeia = cadeiasSorteadas[i];
+			i++;
+			let segundaCadeia = cadeiasSorteadas[i];
+
+			//se tiverem cadeias repetidas para o crossover, muda
+			if(primeiraCadeia == segundaCadeia){
+
+				//se tiver no limite superior, decrementa
+				if(primeiraCadeia == roleta.length-1){
+					cadeiasSorteadas[i-1]--; 
+				} 
+				//do contrário, incrementa
+				else {
+					cadeiasSorteadas[i-1]++; 
+				}
+			}
+
+			console.log("Cadeias Sorteadas: "+cadeiasSorteadas);
+
+		}
+
+		return;
 
 
 		let funcionarios = this.elementos,
