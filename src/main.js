@@ -87,8 +87,19 @@ for(let j=0 ; j<qtdAmostra ; j++){
 	console.log("Fitness: " + fitnesses[j]);
 
 }
+
+console.log(projetos);
 	
 // -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
 
 algoritmoGenetico.setFitnesses(fitnesses);
 algoritmoGenetico.mutar(projetos, orcamento_limite);
+
+
+for(let i=0 ; i<projetos.length ; i++){
+	let projeto = projetos[i];
+
+	//projeto.printHorasTrabalhadas();
+}
+
+
