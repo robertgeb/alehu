@@ -24,7 +24,7 @@ class Populacao {
 		}
 		// Organizando elementos por qualidade
 		this.elementos.sort((individuoA,individuoB) => {
-			return this.avaliarFitness(individuoA) - this.avaliarFitness(individuoB);
+			return this.avaliarFitness(individuoB) - this.avaliarFitness(individuoA);
 		});
 	}
 
@@ -33,6 +33,10 @@ class Populacao {
 		let funcionarios = projeto.getFuncionarios(),
 			novosFuncionarios = [],
 			fases = projeto.getFases();
+		let hrsLimiteFase = [];
+		fases.forEach(element => {
+			hrsLimiteFase.push(element.getDuracao());
+		});
 
 
 		/* 
@@ -42,10 +46,6 @@ class Populacao {
 			
 			
 			let funcionario = funcionarios[i].clonar(fases);
-			let hrsLimiteFase = [];
-			fases.forEach(element => {
-				hrsLimiteFase.push(element.getDuracao());
-			});
 			
 			/*
 			* Para cada funcionário gera um número de horas aleatórias
@@ -64,15 +64,15 @@ class Populacao {
 				}
 
 				//limite decrementa, pois o funcionário corrente já alocou uma porcentagem do tempo dessa etapa
-				hrsLimiteFase[j] -= hrAleatoria; 
-
+				hrsLimiteFase[j] -= hrAleatoria;
+				
 				funcionario.getMapaHorasTrabalhadas().setHorasByFase(fases[j].getNome(), hrAleatoria);
 				
 			}
 			novosFuncionarios.push(funcionario);
-
+			
 		}
-
+		
 		return novosFuncionarios;
 	}
 
@@ -135,13 +135,13 @@ class Populacao {
 				return this.elementos[i];
 		}
 		// process.exit();
-		return this.elementos[0];
+		return this.selecionarIndividuo();
 		
 	}
 
 	selecionarMelhor(projeto, estagnada)
 	{
-		if(this.avaliarFitness(projeto) == this.avaliarFitness(this.elementos[0])){
+		if(this.avaliarFitness(projeto) >= this.avaliarFitness(this.elementos[0])){
 			estagnada(true);
 			return projeto;
 		}
@@ -162,7 +162,7 @@ class Populacao {
 		let that = this;
 		// Organizando elementos por qualidade
 		this.elementos.sort((individuoA,individuoB) => {
-			return that.avaliarFitness(individuoA) - that.avaliarFitness(individuoB);
+			return that.avaliarFitness(individuoB) - that.avaliarFitness(individuoA);
 		});
 	}
 

@@ -62,7 +62,7 @@ class AlgoritmoGenetico {
 			// Cruzando
 			projetos.push(this.cruzar(proj1, proj2));
 			//Mutando
-			// this.mutar(projetos);
+			this.mutar(projetos);
 		}
 		
 		this.populacao.setElementos(projetos);

@@ -62,17 +62,17 @@ sheet2Json('/home/robert/Projects/alehu/planilha.ods', function(err, data) {
 				geracoesEstagnadas++
 			else{
 				geracoesEstagnadas = 0;
-				process.stdout.write("Geração "+ ++geracao +"...");
+				process.stdout.write("Geração "+ ++geracao + " Nivel Produtividade " +algoritmoGenetico.populacao.avaliarFitness(projeto)+"...");
 				readline.cursorTo(process.stdout, 0);
 				printProjeto(projeto);
 				process.stdout.write("\n");
 			}
 		});
-		process.stdout.write("Geração "+ ++geracao +"...")
+		process.stdout.write("Geração "+ ++geracao + " Nível Produtividade " +algoritmoGenetico.populacao.avaliarFitness(projeto)+"...");
 		readline.cursorTo(process.stdout, 0);
 		printProjeto(projeto);
 		readline.moveCursor(process.stdout, 0, -8);
-		if(geracoesEstagnadas > 5)
+		if(geracoesEstagnadas > 1000)
 			break;
 	}
 
