@@ -1,6 +1,7 @@
 "use strict";
 
-
+import MapaProdutividade from './MapaProdutividade.js';
+import MapaHorasTrabalhadas from './MapaHorasTrabalhadas.js';
 class Funcionario {
 
 	constructor(){
@@ -43,7 +44,7 @@ class Funcionario {
 	}
 
 	setHorasTrabalhadasFase(fase, hora){
-		this.getMapaHorasTrabalhadas.setHorasByFase(fase, horas);
+		this.getMapaHorasTrabalhadas().setHorasByFase(fase, horas);
 	}
 
 	getHoraTrabalhadasFase(fase){
@@ -56,6 +57,18 @@ class Funcionario {
 
 	getCusto(){
 		return this.custoHora * this.mapaHorasTrabalhadas.getSomaHoras();
+	}
+
+	clonar(fases)
+	{
+		let funcionario = new Funcionario();
+		const mapaProd = Object.assign( {}, this.getMapaProdutividades() );
+		Object.setPrototypeOf( mapaProd, MapaProdutividade.prototype );
+		funcionario.setNome(this.getNome());
+		funcionario.setCustoHora(this.getCustoHora());
+		funcionario.setMapaProdutividade(mapaProd);
+		funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
+		return funcionario;
 	}
 }
 

@@ -9,10 +9,11 @@ import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
 
 class Projeto {
 
-	constructor(){
-		this.fases = [];
-		this.funcionarios = [];
-		this.orcamento_limite = 0;
+	constructor(fases, funcionarios, orcamento){
+		this.fases = fases;
+		this.funcionarios = funcionarios;
+		this.orcamento_limite = orcamento;
+		this.fitness = 0;
 	}
 
 	setFases(fases){
@@ -74,9 +75,9 @@ class Projeto {
 		for(let idx_func in this.funcionarios){
 			let funcionario = this.funcionarios[idx_func],
 				offsets_len = Math.ceil((column_size - idx_func.toString().length) / 2),
-				offsets = Array(offsets_len).join(" ");
+				offsets = "\t";
 
-			tabela += "|".concat((offsets / 2 == 0 ? offsets : offsets+1), "F", idx_func, offsets);
+			tabela += "|".concat((offsets / 2 == 0 ? offsets : offsets+1), funcionario.getNome(), offsets);
 			
 			for(let fase in horas_fases){
 				horas_fases[fase].push( funcionario.getMapaHorasTrabalhadas().getHorasByFase(fase) );
@@ -101,7 +102,7 @@ class Projeto {
 					offset_left = (offsets_len % 2) == 0 ? Array(offsets_len+1).join(" ") : Array(offsets_len+1).join(" "),
 					offset_right = (offsets_len % 2) == 0 ? Array(offsets_len+1).join(" ") : Array(offsets_len).join(" ");
 
-				linha_fase += "|".concat(offset_left, hora_fase, offset_right);
+				linha_fase += "|".concat("\t", hora_fase, "\t\t");
 			}
 
 			tabela += linha_fase.concat("\n");
@@ -123,6 +124,7 @@ class Projeto {
 	orcamentoDentroDoLimite(){
 		return this.orcamento_limite >= this.getOrcamento();
 	}
+
 }
 
 module.exports = Projeto;

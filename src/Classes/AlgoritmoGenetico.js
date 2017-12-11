@@ -1,7 +1,9 @@
 "use strict";
 
+const util = require('util');
 import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
 import Populacao from './Populacao.js';
+import Projeto from './Projeto.js';
 
 /*
 *
@@ -9,11 +11,10 @@ import Populacao from './Populacao.js';
 *
 * Criador: Polegar
 */
-
 class AlgoritmoGenetico {
 
-	constructor(){
-		
+	constructor(projeto){
+		this.projeto = projeto;
 		/* 
 		* Número MÁXIMO de horas gerado pelo método gerarPopulacaoAleatoria() 
 		* Por padrão 100, podendo ser alterado via método setMaxNumHorasAleatorio()
@@ -44,6 +45,68 @@ class AlgoritmoGenetico {
 		* População atual
 		*/
 		this.populacaoAtual = [];
+
+		this.tamanhoPopulacao = 8;
+
+		this.populacao = new Populacao(this.projeto, this.tamanhoPopulacao);
+
+	}
+
+	run()
+	{
+		let projetos = [];
+		for (let i = 0; i < this.tamanhoPopulacao; i++) {
+			// Selecionando
+			let proj1 = this.populacao.selecionarIndividuo();
+			let proj2 = this.populacao.selecionarIndividuo();
+			// Cruzando
+			projetos.push(this.cruzar(proj1, proj2));
+			//Mutando
+			// this.mutar(projetos);
+		}
+		
+		this.populacao.setElementos(projetos);
+	}
+
+	cruzar(projeto1, projeto2)
+	{
+		let fases = projeto1.getFases();
+		let indiceFaseCrossover = GeradorNumeroAleatorio.gerar(0, fases.length);
+		
+		let funcionariosP1 = projeto1.getFuncionarios();
+		let funcionariosP2 = projeto2.getFuncionarios();
+
+		let funcionariosFilho1 = [];
+		let funcionariosFilho2 = [];
+
+		//navegando no funcionário do projeto 1 (mesma quantidade de funcionários do projeto 2)
+		for(let j=0 ; j<funcionariosP1.length ; j++){
+
+
+			let mapaHorasFunc1 = funcionariosP1[j].getMapaHorasTrabalhadas(); 
+			let mapaHorasFunc2 = funcionariosP2[j].getMapaHorasTrabalhadas(); 
+			funcionariosFilho1.push(funcionariosP1[j].clonar(fases));
+			funcionariosFilho2.push(funcionariosP2[j].clonar(fases));
+
+			
+			//navegando nas fases do projeto
+			for(let l=0 ; l<fases.length ; l++){
+				let horasFaseFunc1 = mapaHorasFunc1.getHorasByFase(fases[l].getNome());
+				let horasFaseFunc2 = mapaHorasFunc2.getHorasByFase(fases[l].getNome());
+
+				//se o l não for menor que o índice, não faz crossover
+				if(l < indiceFaseCrossover){
+					
+					funcionariosFilho1[j].getMapaHorasTrabalhadas().setHorasByFase(fases[l].getNome(), horasFaseFunc1);			
+					
+				}					
+				funcionariosFilho1[j].getMapaHorasTrabalhadas().setHorasByFase(fases[l].getNome(), horasFaseFunc2);			
+				
+			}
+			
+		}
+
+		return new Projeto(fases, funcionariosFilho1, projeto1.getOrcamentoLimite());
 	}
 
 	setFitnesses(fitnesses){
@@ -158,14 +221,13 @@ class AlgoritmoGenetico {
 
 	}
 
-
-	/**
-	*	Loop de mutação padrão em um algoritmo genético
-	*/
-	mutar(projetos, orcamento_limite){
-
-		this.crossover(projetos);
-
+	mutar(projetos){
+		// Quantidade de mutantes
+		let qtdMutantes = GeradorNumeroAleatorio.gerar(0, projetos.length);
+		for (let i = 0; i < qtdMutantes; i++) {
+			let mutanteIndex = GeradorNumeroAleatorio.gerar(0, projetos.length);
+			projetos[mutanteIndex].setFuncionarios(this.populacao.gerarPopulacaoAleatoria(projetos[mutanteIndex]));
+		}
 	}
 
 
@@ -342,7 +404,8 @@ class AlgoritmoGenetico {
 		}
 
 	}
-		
+	
+	
 
 }
 

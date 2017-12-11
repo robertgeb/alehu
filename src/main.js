@@ -1,5 +1,9 @@
 "use strict";
 
+const util = require('util');
+var readline = require('readline');
+const sheet2Json = require('node-excel-to-json');
+
 import Funcionario from './Classes/Funcionario.js';
 import Produtividade from './Classes/Produtividade.js';
 import Fase from './Classes/Fase.js';
@@ -8,98 +12,113 @@ import MapaProdutividade from './Classes/MapaProdutividade.js';
 import Projeto from './Classes/Projeto.js';
 import AlgoritmoGenetico from './Classes/AlgoritmoGenetico.js';
 
-// -------------------------------------- <DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
-let qtdFuncionarios = 5;
-let funcionarios = [];
 
-let fases = [new Fase("Levantamento", 60), 
-			 new Fase("Implementação", 200), 
-			 new Fase("Teste", 100), 
-			 new Fase("Implantação", 40)
-			];
-
-let produtividades = [[], [], [], [], []];
-
-//produtividades[indiceFuncionario][Array de indices produtividade]
-produtividades[0] = {"Levantamento" : 20, "Implementação": 10, "Teste": 60, "Implantação": 50};
-produtividades[1] = {"Levantamento" : 60, "Implementação": 40, "Teste": 30, "Implantação": 30};
-produtividades[2] = {"Levantamento" : 40, "Implementação": 10, "Teste": 30, "Implantação": 20};
-produtividades[3] = {"Levantamento" : 30, "Implementação": 80, "Teste": 50, "Implantação": 30};
-produtividades[4] = {"Levantamento" : 130, "Implementação": 20, "Teste": 70, "Implantação": 10};
-
-//array de projetos (amostragem)
-let projetos = [];
-
-let algoritmoGenetico = new AlgoritmoGenetico();
-
-//quantidade de itens na nossa amostragem
-let qtdAmostra = 4;
-
-//fitnesses da amostragem
-let fitnesses = [];
-
-let orcamento_limite = 60000;
-
-//população inicial
-for(let j=0 ; j<qtdAmostra ; j++){
-
-	let custosHora = [];
-
-	//custosHora[indiceFuncionario]
-	custosHora[0] = 30;
-	custosHora[1] = 60;
-	custosHora[2] = 55;
-	custosHora[3] = 40;
-	custosHora[4] = 80;
-
-
-	for(let i=0 ; i<qtdFuncionarios ; i++){
-		let funcionario = new Funcionario(),
-			mapa_prod = new MapaProdutividade(fases);
-			
-		mapa_prod.fillFromArray(produtividades[i]);
-
-		funcionario.setNome("Funcionario"+i);
-		funcionario.setMapaProdutividade(mapa_prod);
-		funcionario.setCustoHora(custosHora[i]);
-		funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
-
-		funcionarios[i] = funcionario;
+process.stdout.write("Abrindo planilha...")
+readline.cursorTo(process.stdout, 0);
+// Carregando dados da planilha
+sheet2Json('/home/robert/Projects/alehu/planilha.ods', function(err, data) {
+	if(err){	// Checando erros ao abrir ou parsear arquivo
+		console.log("Falha ao abrir arquivo");
+		process.exit();
 	}
 
-	let projeto = new Projeto();
+	var projeto = null;
+	var funcionarios = [];
+	var fases = [];
+	var orcamento = data.Projeto[0]["Orçamento"];
+	var algoritmoGenetico = null;
+	var popAleatoria = null;
+	var geracao = 0;
+	var fitness = 0;
 
-	projeto.setFases(fases);
-	projeto.setFuncionarios(funcionarios);
-	projeto.setOrcamentoLimite(orcamento_limite);
-
-	let ga = new AlgoritmoGenetico(),
-		popAleatoria = ga.gerarPopulacaoAleatoria(projeto);
-
-	ga.setPopulacaoInicial(popAleatoria);
-	projeto.setFuncionarios(popAleatoria.toArray());
-	projeto.printHorasTrabalhadas();
-
-	projetos[j] = projeto;	
-
-	fitnesses[j] = algoritmoGenetico.avaliarFitness(projeto);
-
-	console.log("Fitness: " + fitnesses[j]);
-
-}
-
-console.log(projetos);
+	// Validando planilha
+	if(!data.Fases || !data.Funcionarios)
+	{
+		console.log("Tabela de Fases ou de Funcionario não encontrada na planilha");
+		process.exit();
+	}
+	process.stdout.write("Carregando dados...")
+	readline.cursorTo(process.stdout, 0);
+	// Carregando componentes
+	fases = createFases(data.Fases);
+	funcionarios = createFuncionarios(data.Funcionarios, fases);
 	
-// -------------------------------------- </DEFINIÇÂO MANUAL DE VARIÁVEIS> --------------------------------------
+	// Criando projeto
+	projeto = new Projeto(fases, funcionarios, orcamento);
+	
+	// Imprimindo informações iniciais
+	process.stdout.write("Iniciando Algoritmo Genético...")
+    readline.cursorTo(process.stdout, 0);
+	printProjeto(projeto);
 
-algoritmoGenetico.setFitnesses(fitnesses);
-algoritmoGenetico.mutar(projetos, orcamento_limite);
+	//Iniciando algoritmo genético
+	algoritmoGenetico = new AlgoritmoGenetico(projeto);
+	let geracoesEstagnadas = 0;
 
+	while(1) {
+		algoritmoGenetico.run();
+		projeto = algoritmoGenetico.populacao.selecionarMelhor(projeto, (estagnada) => {
+			if(estagnada)
+				geracoesEstagnadas++
+			else{
+				geracoesEstagnadas = 0;
+				process.stdout.write("Geração "+ ++geracao +"...");
+				readline.cursorTo(process.stdout, 0);
+				printProjeto(projeto);
+				process.stdout.write("\n");
+			}
+		});
+		process.stdout.write("Geração "+ ++geracao +"...")
+		readline.cursorTo(process.stdout, 0);
+		printProjeto(projeto);
+		readline.moveCursor(process.stdout, 0, -8);
+		if(geracoesEstagnadas > 5)
+			break;
+	}
 
-for(let i=0 ; i<projetos.length ; i++){
-	let projeto = projetos[i];
+});
 
-	//projeto.printHorasTrabalhadas();
+function createFases(data) {
+	let fases = [];
+	data.forEach(f => {
+		if(!f.Nome || !f.Custo)
+			return;
+		let fase = new Fase(f.Nome, f.Custo);
+		fases.push(fase);
+	});
+	return fases;
 }
+
+function createFuncionarios(data, fases){
+	let funcionarios = [];
+	data.forEach(f => {
+		if(!f.Nome)
+			return;
+		let funcionario = new Funcionario(),
+			mapaProdutividade = new MapaProdutividade(fases);
+		
+		fases.forEach(fase => {
+			mapaProdutividade.setProdByFase(fase.nome, f[fase.nome]);
+		});
+		
+		funcionario.setNome(f.Nome);
+		funcionario.setMapaProdutividade(mapaProdutividade);
+		funcionario.setCustoHora(f.Custo);
+		funcionario.setMapaHorasTrabalhadas(new MapaHorasTrabalhadas(fases));
+
+		funcionarios.push(funcionario);
+	});
+	return funcionarios;
+}
+
+function printProjeto(projeto)
+{
+	process.stdout.write("\n");
+	projeto.printHorasTrabalhadas();
+	process.stdout.write("Orcamento: " + projeto.getOrcamento());
+	readline.cursorTo(process.stdout, 0);
+	// readline.moveCursor(process.stdout, 0, -8);
+}
+
 
 

@@ -1,13 +1,169 @@
 "use strict";
 
+
+const util = require('util');
+import GeradorNumeroAleatorio from './GeradorNumeroAleatorio.js';
+import Projeto from './Projeto.js';
 class Populacao {
 
-	construct(){
-		this.elementos = [];	
+	constructor(projeto, tamanho){
+		this.elementos = [];
+		this.sumFitness = 0;
+		// Gerando população aleatoria
+		for (let i = 0; i < tamanho; i++) {
+			// Clonando projeto
+			let individuo = Object.assign( {}, projeto );
+			Object.setPrototypeOf( individuo, Projeto.prototype );
+
+			// Gerando valores aleatorios
+			individuo.setFuncionarios(this.gerarPopulacaoAleatoria(projeto));
+			
+			this.sumFitness += this.avaliarFitness(individuo);
+			// Inserindo na população
+			this.elementos.push(individuo);
+		}
+		// Organizando elementos por qualidade
+		this.elementos.sort((individuoA,individuoB) => {
+			return this.avaliarFitness(individuoA) - this.avaliarFitness(individuoB);
+		});
+	}
+
+	gerarPopulacaoAleatoria(projeto){
+
+		let funcionarios = projeto.getFuncionarios(),
+			novosFuncionarios = [],
+			fases = projeto.getFases();
+
+
+		/* 
+
+		*/
+		for(let i=0 ; i<funcionarios.length ; i++){
+			
+			
+			let funcionario = funcionarios[i].clonar(fases);
+			let hrsLimiteFase = [];
+			fases.forEach(element => {
+				hrsLimiteFase.push(element.getDuracao());
+			});
+			
+			/*
+			* Para cada funcionário gera um número de horas aleatórias
+			*/
+			for(let j=0 ; j<fases.length ; j++){				
+				//limite de horas total para a fase (limite da soma das horas de todos os funcionários para essa fase)
+
+				let hrAleatoria;
+
+				//o último funcionário fica com o restante das horas. Os primeiros são randômicos
+				if(i != funcionarios.length-1){
+					hrAleatoria = GeradorNumeroAleatorio.gerar(0, 
+														   hrsLimiteFase[j]);
+				} else {
+					hrAleatoria = hrsLimiteFase[j];
+				}
+
+				//limite decrementa, pois o funcionário corrente já alocou uma porcentagem do tempo dessa etapa
+				hrsLimiteFase[j] -= hrAleatoria; 
+
+				funcionario.getMapaHorasTrabalhadas().setHorasByFase(fases[j].getNome(), hrAleatoria);
+				
+			}
+			novosFuncionarios.push(funcionario);
+
+		}
+
+		return novosFuncionarios;
+	}
+
+	avaliarFitness(projeto){
+
+		let fitness = 0;
+
+		let funcionarios = projeto.getFuncionarios();
+		let fases = projeto.getFases();
+
+		//funcionários do projeto
+		for(let i=0 ; i<funcionarios.length ; i++){
+
+			let funcionario = funcionarios[i];			
+
+			//mapa de horas do funcionário corrente
+			let mapaHoras = funcionario.getMapaHorasTrabalhadas();
+			let mapaProdutividade = funcionario.getMapaProdutividades();
+
+			for(let j=0 ; j<fases.length ; j++){
+
+				let fase = fases[j].getNome();
+				
+				//horas trabalhadas nessa fase
+				let horasTrabalhadasNessaFase = mapaHoras.getHorasByFase(fase);
+				
+				//produtividade do funcionário nessa fase
+				let produtividadeNessaFase = mapaProdutividade.getProdByFase(fase);
+
+				let producao = produtividadeNessaFase * horasTrabalhadasNessaFase;
+
+
+				//horas do funcionário e da fase corrente
+				fitness += producao;
+			}
+		}
+		return fitness;
+
+	}
+
+	/*
+	* 	Seleciona um indvíduo 
+	*/
+	selecionarIndividuo()
+	{
+		let pesoAleatorio = Math.random();
+		let normalize = function(val, max, min) { return (val - min) / (max - min); };
+		let menorFitness = this.avaliarFitness(this.elementos[0]);
+		let maiorFitness = this.avaliarFitness(this.elementos[0]);
+		for (let i = 0; i < this.elementos.length; i++){
+			if(this.avaliarFitness(this.elementos[i]) < menorFitness)
+				menorFitness = this.avaliarFitness(this.elementos[i]);
+			if(this.avaliarFitness(this.elementos[i]) > maiorFitness)
+				maiorFitness = this.avaliarFitness(this.elementos[i]);
+		}
+
+		for (let i = 0; i < this.elementos.length; i++){
+			let fitnessNormalizado = normalize(this.avaliarFitness(this.elementos[i]), maiorFitness, menorFitness);
+			if(fitnessNormalizado < pesoAleatorio)
+				return this.elementos[i];
+		}
+		// process.exit();
+		return this.elementos[0];
+		
+	}
+
+	selecionarMelhor(projeto, estagnada)
+	{
+		if(this.avaliarFitness(projeto) == this.avaliarFitness(this.elementos[0])){
+			estagnada(true);
+			return projeto;
+		}
+		estagnada(false);
+		return this.elementos[0];
+
 	}
 
 	setElementos(elementos){
-		this.elementos = elementos;
+		this.elementos = [];
+		this.sumFitness = 0;
+		for (let i = 0; i < elementos.length; i++) {
+			this.sumFitness += this.avaliarFitness(elementos[i]);
+			// Inserindo na população
+			this.elementos.push(elementos[i]);
+		}
+
+		let that = this;
+		// Organizando elementos por qualidade
+		this.elementos.sort((individuoA,individuoB) => {
+			return that.avaliarFitness(individuoA) - that.avaliarFitness(individuoB);
+		});
 	}
 
 	getElementos(){
